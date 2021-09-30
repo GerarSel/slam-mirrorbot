@@ -110,7 +110,7 @@ class MegaAppListener(MegaListener):
         errStr = error.toString()
         LOGGER.error(f'Mega download error in file {transfer} {filen}: {error}')
 
-        if state == 1 or state == 4:
+        if state in [1, 4]:
             # Sometimes MEGA (offical client) can't stream a node either and raises a temp failed error.
             # Don't break the transfer queue if transfer's in queued (1) or retrying (4) state [causes seg fault]
             return
@@ -167,16 +167,16 @@ class MegaDownloadHelper:
             node = folder_api.authorizeNode(mega_listener.node)
         if mega_listener.error is not None:
             return sendMessage(str(mega_listener.error), listener.bot, listener.update)
-        if STOP_DUPLICATE:
-            LOGGER.info(f'Checking File/Folder if already in Drive')
+        if STOP_DUPLICATE and not listener.isLeech:
+            LOGGER.info('Checking File/Folder if already in Drive')
             mname = node.getName()
             if listener.isTar:
-                mname = mname + ".tar"
+                mname = mname + ".zip" if listener.isZip else mname + ".tar"
             if listener.extract:
                 smsg = None
             else:
                 gd = GoogleDriveHelper()
-                smsg, button = gd.drive_list(mname)
+                smsg, button = gd.drive_list(mname, True)
             if smsg:
                 msg1 = "File/Folder is already available in Drive.\nHere are the search results:"
                 sendMarkup(msg1, listener.bot, listener.update, button)

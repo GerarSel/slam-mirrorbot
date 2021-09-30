@@ -23,7 +23,9 @@ def short_url(longurl):
         return random.choice(linkvertise)
     elif "bitly.com" in SHORTENER:
         s = pyshorteners.Shortener(api_key=SHORTENER_API)
-        bitly = s.bitly.short(longurl)
-        return bitly
+        return s.bitly.short(longurl)
+    elif "ouo.io" in SHORTENER:
+        disable_warnings()
+        return requests.get(f'http://ouo.io/api/{SHORTENER_API}?s={longurl}', verify=False).text
     else:
         return requests.get(f'https://{SHORTENER}/api?api={SHORTENER_API}&url={longurl}&format=text').text
